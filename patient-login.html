@@ -31,7 +31,6 @@
   .back-home { display: block; text-align: center; margin-top: 20px; color: #64748B; font-size: 12px; text-decoration: none; }
   .back-home:hover { color: white; }
 
-  /* Animation classes */
   .hidden { display:none; }
   .fade-in { animation: fadeIn 0.5s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -44,7 +43,6 @@
   <div id="loginForm">
     <h2>Welcome Back</h2>
     <span class="subtitle">Login to access your reports</span>
-    
     <div class="input-group">
       <i class='bx bxs-phone'></i>
       <input type="number" id="lPhone" placeholder="Phone Number">
@@ -53,9 +51,7 @@
       <i class='bx bxs-lock-alt'></i>
       <input type="password" id="lPass" placeholder="Password">
     </div>
-
     <button onclick="handleLogin()">Login</button>
-    
     <div class="switch-link">
       New here? <span onclick="toggleForms()">Create Account</span>
     </div>
@@ -68,10 +64,6 @@
     <div class="input-group">
       <i class='bx bxs-user'></i>
       <input type="text" id="rName" placeholder="Full Name">
-    </div>
-    <div class="input-group">
-      <i class='bx bxs-envelope'></i>
-      <input type="email" id="rEmail" placeholder="Email Address">
     </div>
     <div class="input-group">
       <i class='bx bxs-phone'></i>
@@ -94,11 +86,9 @@
 </div>
 
 <script type="module">
-  // 1. Import Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // 2. Your Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyByOYHIq9KdftTw7-VS4DdHXxbm6bh1Ajg",
     authDomain: "pathology-f19ed.firebaseapp.com",
@@ -108,52 +98,39 @@
     appId: "1:312449114398:web:e52fdc316fdf9c0552690f"
   };
 
-  // 3. Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 4. Attach Functions to Window (Global Scope)
-  
   // Toggle Forms
   window.toggleForms = function() {
-    const login = document.getElementById('loginForm');
-    const reg = document.getElementById('regForm');
-    
-    if(login.classList.contains('hidden')) {
-      login.classList.remove('hidden'); login.classList.add('fade-in');
-      reg.classList.add('hidden');
-    } else {
-      reg.classList.remove('hidden'); reg.classList.add('fade-in');
-      login.classList.add('hidden');
-    }
+    document.getElementById('loginForm').classList.toggle('hidden');
+    document.getElementById('regForm').classList.toggle('hidden');
   }
 
   // Handle Registration
   window.handleRegister = async function() {
     const name = document.getElementById('rName').value;
-    const email = document.getElementById('rEmail').value;
     const phone = document.getElementById('rPhone').value;
     const pass = document.getElementById('rPass').value;
 
-    if(!name || !email || !phone || !pass) {
+    if(!name || !phone || !pass) {
       alert("Please fill all fields!");
       return;
     }
 
     try {
-      // Check if user already exists
+      // Check if user exists
       const q = query(collection(db, "users"), where("phone", "==", phone));
       const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
+      if(!querySnapshot.empty) {
         alert("Phone number already registered! Please login.");
         return;
       }
 
-      // Add User to Firestore
+      // Add User (No Email)
       await addDoc(collection(db, "users"), {
         name: name,
-        email: email,
         phone: phone,
         pass: pass,
         role: "patient",
@@ -161,14 +138,13 @@
       });
 
       alert("Registration Successful! Please Login.");
-      toggleForms(); // Switch back to login view
-      
-      // Auto-fill login phone
+      toggleForms();
       document.getElementById('lPhone').value = phone;
 
     } catch (e) {
       console.error("Error registering: ", e);
-      alert("Registration failed. Check console or internet connection.");
+      // Detailed error for debugging
+      alert("Registration failed: " + e.message + "\n\n(Tip: Check if your Firestore Database is in 'Test Mode' in Firebase Console)");
     }
   }
 
@@ -177,32 +153,22 @@
     const phone = document.getElementById('lPhone').value;
     const pass = document.getElementById('lPass').value;
 
-    if(!phone || !pass) {
-      alert("Please enter phone and password.");
-      return;
-    }
+    if(!phone || !pass) return alert("Enter credentials");
 
     try {
-      // Query Firestore for user
       const q = query(collection(db, "users"), where("phone", "==", phone), where("pass", "==", pass));
       const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        // User found
+      if(!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0].data();
-        
-        // Save session (Local storage is still used to remember login across pages)
         sessionStorage.setItem('currentUser', JSON.stringify(userDoc));
-        
-        // Redirect
         window.location.href = 'patient-dashboard.html';
       } else {
         alert("Invalid Phone or Password!");
       }
-
     } catch (e) {
-      console.error("Error logging in: ", e);
-      alert("Login failed. Check console or internet connection.");
+      console.error(e);
+      alert("Login Error: " + e.message);
     }
   }
 </script>
