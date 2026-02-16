@@ -49,7 +49,7 @@ a{color:#38BDF8;font-size:12px;text-decoration:none;}
 
 <div class="container">
   <h2>Report Delivery Login</h2>
-  <input type="text" id="dID" placeholder="Delivery ID">
+  <input type="email" id="dEmail" placeholder="Email Address">
   <input type="password" id="dPass" placeholder="Password">
   <button onclick="login()">Login</button>
   <br><br>
@@ -57,11 +57,9 @@ a{color:#38BDF8;font-size:12px;text-decoration:none;}
 </div>
 
 <script type="module">
-  // 1. Import Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  // 2. Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyByOYHIq9KdftTw7-VS4DdHXxbm6bh1Ajg",
     authDomain: "pathology-f19ed.firebaseapp.com",
@@ -71,41 +69,30 @@ a{color:#38BDF8;font-size:12px;text-decoration:none;}
     appId: "1:312449114398:web:e52fdc316fdf9c0552690f"
   };
 
-  // 3. Initialize
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-  // 4. Login Logic
   window.login = async function() {
-    const id = document.getElementById('dID').value;
+    const email = document.getElementById('dEmail').value;
     const pass = document.getElementById('dPass').value;
 
-    if(!id || !pass) {
-        alert("Please enter ID and Password");
+    if(!email || !pass) {
+        alert("Please enter Email and Password");
         return;
     }
 
     try {
-        // Checking against 'delivery_partners' collection in Firebase
-        const q = query(
-            collection(db, "delivery_partners"), 
-            where("deliveryId", "==", id), 
-            where("password", "==", pass)
-        );
-        
-        const querySnapshot = await getDocs(q);
+        // Authenticate using Firebase Auth service
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const user = userCredential.user;
 
-        if (!querySnapshot.empty) {
-            // Login Success
-            const partnerData = querySnapshot.docs[0].data();
-            sessionStorage.setItem('deliveryUser', JSON.stringify(partnerData));
-            window.location.href = "delivery-dashboard.html";
-        } else {
-            alert("Invalid ID or Password! (Check if you added user in Firebase)");
-        }
-    } catch(e) {
-        console.error("Login Error:", e);
-        alert("Connection Error. Check Console.");
+        // Save session and redirect
+        sessionStorage.setItem('deliveryUser', JSON.stringify({ email: user.email, uid: user.uid }));
+        window.location.href = "delivery-dashboard.html";
+
+    } catch(error) {
+        console.error("Login Error:", error.code, error.message);
+        alert("Invalid Email or Password! Ensure 'Email/Password' is enabled in the Firebase Auth 'Sign-in method' tab.");
     }
   }
 </script>
