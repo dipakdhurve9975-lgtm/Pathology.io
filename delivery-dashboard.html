@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Partner Dashboard • MediLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #0F172A;
+            --card: #1E293B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: white;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        
+        .status-indicator {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 8px 15px; border-radius: 30px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-dot { width: 10px; height: 10px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Earnings Card */
+        .earnings-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 20px; padding: 30px; border-radius: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+        .earnings-info h3 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+        .earnings-amount { font-size: 36px; font-weight: 900; }
+        .earnings-stats { display: flex; gap: 20px; margin-top: 15px; }
+        .earning-stat { font-size: 13px; opacity: 0.9; }
+        .earning-stat strong { display: block; font-size: 18px; margin-top: 5px; }
+        
+        .withdraw-btn {
+            background: white; color: #667eea; padding: 12px 25px;
+            border-radius: 30px; border: none; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Container */
+        .container { padding: 0 20px; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-mini { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #334155; text-align: center; }
+        .stat-mini-value { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
+        .stat-mini-label { font-size: 11px; color: #94A3B8; text-transform: uppercase; }
+
+        /* Job Card */
+        .job-card {
+            background: var(--card); border-radius: 20px; padding: 25px;
+            margin-bottom: 20px; border: 1px solid #334155; position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: 0.3s;
+        }
+        .job-priority {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(239, 68, 68, 0.15); color: var(--danger);
+            padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+        }
+        .job-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; }
+        .patient-name { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+        .job-tag {
+            background: rgba(59, 130, 246, 0.15); color: var(--primary);
+            padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .info-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; font-size: 14px; color: #94A3B8; }
+        .info-row i { color: var(--primary); font-size: 18px; width: 20px; }
+        .distance-badge {
+            background: rgba(16, 185, 129, 0.1); color: var(--success);
+            padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;
+            display: inline-block; margin-top: 10px;
+        }
+
+        /* Action Buttons */
+        .action-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            margin-top: 20px; padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .btn {
+            border: none; padding: 14px; border-radius: 12px; font-weight: 700;
+            cursor: pointer; font-size: 14px; display: flex; justify-content: center; align-items: center;
+            gap: 8px; transition: 0.3s; font-family: inherit; text-decoration: none;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-call { background: #334155; color: white; }
+        .btn-map { background: #334155; color: #38BDF8; }
+        .btn-accept { background: var(--primary); color: white; grid-column: span 2; }
+        .btn-complete { background: var(--success); color: white; grid-column: span 2; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--card);
+            border-top: 1px solid #334155; display: flex; justify-content: space-around;
+            padding: 12px 0; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+        }
+        .nav-btn {
+            background: none; border: none; color: #94A3B8; font-family: inherit;
+            font-size: 11px; display: flex; flex-direction: column; align-items: center;
+            gap: 6px; cursor: pointer; padding: 8px 15px; border-radius: 12px; transition: 0.3s;
+        }
+        .nav-btn i { font-size: 24px; }
+        .nav-btn.active { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+        /* Empty State */
+        .empty-msg { text-align: center; margin-top: 80px; color: #64748B; }
+        .empty-msg i { font-size: 60px; margin-bottom: 15px; opacity: 0.3; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+            background: var(--card); color: white; padding: 15px 25px;
+            border-radius: 30px; font-size: 14px; opacity: 0; transition: 0.3s;
+            z-index: 10000; border: 1px solid #334155; pointer-events: none;
+        }
+        .toast.show { opacity: 1; bottom: 140px; }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .earnings-banner { flex-direction: column; text-align: center; }
+            .earnings-stats { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo"><i class='bx bx-cycling'></i> Delivery Partner</div>
+    <div class="status-indicator"><div class="status-dot"></div><span style="font-size: 12px; font-weight: 600;">Online</span></div>
+</div>
+
+<div class="earnings-banner">
+    <div class="earnings-info">
+        <h3>Today's Earnings</h3>
+        <div class="earnings-amount">₹<span id="todayEarnings">0</span></div>
+        <div class="earnings-stats">
+            <div class="earning-stat">Deliveries <strong id="todayDeliveries">0</strong></div>
+            <div class="earning-stat">Distance <strong><span id="todayDistance">0</span> km</strong></div>
+        </div>
+    </div>
+    <button class="withdraw-btn" onclick="showToast('Withdraw feature coming soon!')"><i class='bx bx-wallet'></i> Withdraw</button>
+</div>
+
+<div class="container">
+    <div class="stats-grid">
+        <div class="stat-mini"><div class="stat-mini-value" style="color: var(--warning);" id="statNew">0</div><div class="stat-mini-label">New Requests</div></div>
+        <div class="stat-mini"><div class="stat-mini-value" style="color: var(--primary);" id="statActive">0</div><div class="stat-mini-label">Accepted</div></div>
+        <div class="stat-mini"><div class="stat-mini-value" style="color: var(--success);" id="statCompleted">0</div><div class="stat-mini-label">Completed</div></div>
+    </div>
+    <div id="jobList"></div>
+</div>
+
+<div class="bottom-nav">
+    <button class="nav-btn active" onclick="setTab('new', this)"><i class='bx bxs-bell'></i> New Jobs</button>
+    <button class="nav-btn" onclick="setTab('active', this)"><i class='bx bxs-navigation'></i> Accepted</button>
+    <button class="nav-btn" onclick="setTab('history', this)"><i class='bx bxs-time-five'></i> History</button>
+    <button class="nav-btn" onclick="location.href='delivery-login.html'"><i class='bx bx-log-out'></i> Logout</button>
+</div>
+
+<div id="toast" class="toast"><span id="toastMsg">Success!</span></div>
+
+<script type="module">
+// 1. Firebase Imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// 2. Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyByOYHIq9KdftTw7-VS4DdHXxbm6bh1Ajg",
+    authDomain: "pathology-f19ed.firebaseapp.com",
+    projectId: "pathology-f19ed",
+    storageBucket: "pathology-f19ed.firebasestorage.app",
+    messagingSenderId: "312449114398",
+    appId: "1:312449114398:web:e52fdc316fdf9c0552690f"
+};
+
+// 3. Initialize
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Global Variables
+let currentTab = 'new';
+let allJobs = [];
+const DELIVERY_CHARGE = 50;
+
+// 4. Realtime Listener
+onSnapshot(collection(db, "appointments"), (snapshot) => {
+    allJobs = [];
+    snapshot.forEach(doc => {
+        allJobs.push({...doc.data(), id: doc.id});
+    });
+    // Refresh UI whenever data changes
+    loadJobs();
+    updateEarnings();
+});
+
+// Expose functions to Window
+window.setTab = (tab, btnElement) => {
+    currentTab = tab;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
+    loadJobs();
+}
+
+window.loadJobs = () => {
+    const list = document.getElementById('jobList');
+    list.innerHTML = '';
+
+    // Logic: 
+    // New Jobs = Status 'Pending' (Both Home & Lab Visits as per your request)
+    // Active Jobs = Status 'Accepted' or 'Out for Delivery'
+    
+    let jobs = [];
+    if(currentTab === 'new') {
+        jobs = allJobs.filter(j => j.status === 'Pending');
+    } else if(currentTab === 'active') {
+        jobs = allJobs.filter(j => ['Accepted', 'Out for Delivery'].includes(j.status));
+    } else if(currentTab === 'history') {
+        jobs = allJobs.filter(j => j.status === 'Delivered');
+    }
+
+    // Sort by Date
+    jobs.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    // Stats Update
+    document.getElementById('statNew').innerText = allJobs.filter(j => j.status === 'Pending').length;
+    document.getElementById('statActive').innerText = allJobs.filter(j => ['Accepted', 'Out for Delivery'].includes(j.status)).length;
+    document.getElementById('statCompleted').innerText = allJobs.filter(j => j.status === 'Delivered').length;
+
+    if(jobs.length === 0) {
+        list.innerHTML = `<div class="empty-msg"><i class='bx bx-package'></i><br><p style="font-weight:600; margin-top:10px;">No ${currentTab} jobs found</p></div>`;
+        return;
+    }
+
+    jobs.forEach(job => {
+        let buttons = '';
+        const distance = (Math.random() * 10 + 2).toFixed(1);
+
+        if(currentTab === 'new') {
+            let acceptText = job.visit === 'Home Visit' ? 'Accept Pickup' : 'Accept Request';
+            let mapBtn = job.visit === 'Home Visit' ? 
+                `<button class="btn btn-map" onclick="openMap('${job.address}')"><i class='bx bxs-map'></i> View Map</button>` : '';
+            
+            buttons = `
+            <div class="action-grid" style="${!mapBtn ? 'grid-template-columns: 1fr;' : ''}">
+                ${mapBtn}
+                <a href="tel:${job.phone}" class="btn btn-call"><i class='bx bxs-phone'></i> Call</a>
+                <button class="btn btn-accept" onclick="updateStatus('${job.id}', 'Accepted')"><i class='bx bx-check'></i> ${acceptText}</button>
+            </div>`;
+        } else if (currentTab === 'active') {
+             let mapBtn = job.visit === 'Home Visit' ? 
+                `<button class="btn btn-map" onclick="openMap('${job.address}')"><i class='bx bxs-direction-right'></i> Navigate</button>` : '';
+
+            buttons = `
+            <div class="action-grid" style="${!mapBtn ? 'grid-template-columns: 1fr;' : ''}">
+                ${mapBtn}
+                <a href="tel:${job.phone}" class="btn btn-call"><i class='bx bxs-phone'></i> Call</a>
+                <button class="btn btn-complete" onclick="completeJob('${job.id}')"><i class='bx bx-check-double'></i> Mark Completed</button>
+            </div>`;
+        } else {
+            buttons = `<div style="margin-top:15px; text-align:center; color:#10B981; font-weight:bold; font-size:12px;">✅ Completed • Earned ₹${DELIVERY_CHARGE}</div>`;
+        }
+
+        const visitBadge = job.visit === 'Home Visit' 
+            ? '<div class="job-priority">🔥 Pickup Request</div>' 
+            : '<div class="job-priority" style="color:#3B82F6; background:rgba(59, 130, 246, 0.15)">🏥 Lab Visit</div>';
+
+        const card = `
+        <div class="job-card">
+            ${visitBadge}
+            <div class="job-header">
+                <div><div class="patient-name">${job.patient}</div><div class="job-tag">${job.test}</div></div>
+            </div>
+            <div class="info-row"><i class='bx bxs-map'></i> <span>${job.address}</span></div>
+            <div class="info-row"><i class='bx bxs-phone'></i> <span>${job.phone}</span></div>
+            <div class="info-row"><i class='bx bxs-time'></i> <span>${job.date} • ${job.time || 'Anytime'}</span></div>
+            ${job.visit === 'Home Visit' ? `<div class="distance-badge"><i class='bx bx-current-location'></i> ${distance} km away</div>` : ''}
+            ${buttons}
+        </div>`;
+        list.innerHTML += card;
+    });
+}
+
+window.openMap = (addr) => {
+    if(!addr || addr === 'Lab Visit') return showToast("No map needed.");
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`, '_blank');
+}
+
+window.updateStatus = async (id, status) => {
+    try {
+        const docRef = doc(db, "appointments", id);
+        await updateDoc(docRef, { 
+            status: status,
+            acceptedAt: new Date().toISOString()
+        });
+        showToast(status === 'Accepted' ? 'Job Accepted!' : 'Status Updated');
+    } catch(e) {
+        console.error(e);
+        showToast("Error updating status", "error");
+    }
+}
+
+window.completeJob = (id) => {
+    if(confirm("Mark this job as Completed?")) {
+        window.updateStatus(id, 'Delivered');
+    }
+}
+
+window.updateEarnings = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const todayDeliveries = allJobs.filter(j => j.status === 'Delivered' && j.date === today);
+    const earnings = todayDeliveries.length * DELIVERY_CHARGE;
+    const distance = (todayDeliveries.length * 5.5).toFixed(1);
+    
+    document.getElementById('todayEarnings').innerText = earnings;
+    document.getElementById('todayDeliveries').innerText = todayDeliveries.length;
+    document.getElementById('todayDistance').innerText = distance;
+}
+
+window.showToast = (msg) => {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

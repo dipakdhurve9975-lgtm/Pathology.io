@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Portal • Pathology</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<style>
+  body{ margin:0; font-family:'Outfit',sans-serif; background:#0F172A; display:flex; justify-content:center; align-items:center; height:100vh; color:white; }
+  
+  .container{ width:350px; padding:40px; background:rgba(255,255,255,0.03); border-radius:24px; border:1px solid rgba(255,255,255,0.05); backdrop-filter:blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  
+  h2 { margin-top:0; text-align:center; margin-bottom: 5px; font-size: 28px; }
+  .subtitle { text-align:center; color:#94A3B8; font-size:14px; margin-bottom:30px; display:block; }
+
+  .input-group { position:relative; margin-bottom:15px; }
+  .input-group i { position:absolute; left:15px; top:14px; color:#94A3B8; font-size:20px; }
+  
+  input{ width:100%; padding:14px 14px 14px 45px; border:1px solid #334155; background:#1E293B; border-radius:12px; color:white; outline:none; box-sizing:border-box; transition:0.3s; font-size: 14px; }
+  input:focus { border-color:#FF512F; background:#0F172A; }
+
+  button{ width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,#FF512F,#DD2476); color:white; font-weight:bold; cursor:pointer; margin-top:10px; font-size:16px; transition: 0.3s; }
+  button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(255, 81, 47, 0.4); }
+  button:active { transform:scale(0.98); }
+
+  .switch-link { text-align:center; margin-top:20px; font-size:14px; color:#94A3B8; }
+  .switch-link span { color:#FF512F; cursor:pointer; font-weight:700; transition: 0.2s; }
+  .switch-link span:hover { color: #DD2476; text-decoration: underline; }
+  
+  .back-home { display: block; text-align: center; margin-top: 20px; color: #64748B; font-size: 12px; text-decoration: none; }
+  .back-home:hover { color: white; }
+
+  /* Animation classes */
+  .hidden { display:none; }
+  .fade-in { animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="container fade-in">
+  
+  <div id="loginForm">
+    <h2>Welcome Back</h2>
+    <span class="subtitle">Login to access your reports</span>
+    
+    <div class="input-group">
+      <i class='bx bxs-phone'></i>
+      <input type="number" id="lPhone" placeholder="Phone Number">
+    </div>
+    <div class="input-group">
+      <i class='bx bxs-lock-alt'></i>
+      <input type="password" id="lPass" placeholder="Password">
+    </div>
+
+    <button onclick="handleLogin()">Login</button>
+    
+    <div class="switch-link">
+      New here? <span onclick="toggleForms()">Create Account</span>
+    </div>
+  </div>
+
+  <div id="regForm" class="hidden">
+    <h2>Create Account</h2>
+    <span class="subtitle">Register to book appointments</span>
+
+    <div class="input-group">
+      <i class='bx bxs-user'></i>
+      <input type="text" id="rName" placeholder="Full Name">
+    </div>
+    <div class="input-group">
+      <i class='bx bxs-envelope'></i>
+      <input type="email" id="rEmail" placeholder="Email Address">
+    </div>
+    <div class="input-group">
+      <i class='bx bxs-phone'></i>
+      <input type="number" id="rPhone" placeholder="Phone Number">
+    </div>
+    <div class="input-group">
+      <i class='bx bxs-lock-alt'></i>
+      <input type="password" id="rPass" placeholder="Create Password">
+    </div>
+
+    <button onclick="handleRegister()">Sign Up</button>
+
+    <div class="switch-link">
+      Already have an account? <span onclick="toggleForms()">Login</span>
+    </div>
+  </div>
+
+  <a href="index.html" class="back-home">← Back to Home</a>
+
+</div>
+
+<script type="module">
+  // 1. Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 2. Your Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyByOYHIq9KdftTw7-VS4DdHXxbm6bh1Ajg",
+    authDomain: "pathology-f19ed.firebaseapp.com",
+    projectId: "pathology-f19ed",
+    storageBucket: "pathology-f19ed.firebasestorage.app",
+    messagingSenderId: "312449114398",
+    appId: "1:312449114398:web:e52fdc316fdf9c0552690f"
+  };
+
+  // 3. Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. Attach Functions to Window (Global Scope)
+  
+  // Toggle Forms
+  window.toggleForms = function() {
+    const login = document.getElementById('loginForm');
+    const reg = document.getElementById('regForm');
+    
+    if(login.classList.contains('hidden')) {
+      login.classList.remove('hidden'); login.classList.add('fade-in');
+      reg.classList.add('hidden');
+    } else {
+      reg.classList.remove('hidden'); reg.classList.add('fade-in');
+      login.classList.add('hidden');
+    }
+  }
+
+  // Handle Registration
+  window.handleRegister = async function() {
+    const name = document.getElementById('rName').value;
+    const email = document.getElementById('rEmail').value;
+    const phone = document.getElementById('rPhone').value;
+    const pass = document.getElementById('rPass').value;
+
+    if(!name || !email || !phone || !pass) {
+      alert("Please fill all fields!");
+      return;
+    }
+
+    try {
+      // Check if user already exists
+      const q = query(collection(db, "users"), where("phone", "==", phone));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        alert("Phone number already registered! Please login.");
+        return;
+      }
+
+      // Add User to Firestore
+      await addDoc(collection(db, "users"), {
+        name: name,
+        email: email,
+        phone: phone,
+        pass: pass,
+        role: "patient",
+        createdAt: new Date().toISOString()
+      });
+
+      alert("Registration Successful! Please Login.");
+      toggleForms(); // Switch back to login view
+      
+      // Auto-fill login phone
+      document.getElementById('lPhone').value = phone;
+
+    } catch (e) {
+      console.error("Error registering: ", e);
+      alert("Registration failed. Check console or internet connection.");
+    }
+  }
+
+  // Handle Login
+  window.handleLogin = async function() {
+    const phone = document.getElementById('lPhone').value;
+    const pass = document.getElementById('lPass').value;
+
+    if(!phone || !pass) {
+      alert("Please enter phone and password.");
+      return;
+    }
+
+    try {
+      // Query Firestore for user
+      const q = query(collection(db, "users"), where("phone", "==", phone), where("pass", "==", pass));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        // User found
+        const userDoc = querySnapshot.docs[0].data();
+        
+        // Save session (Local storage is still used to remember login across pages)
+        sessionStorage.setItem('currentUser', JSON.stringify(userDoc));
+        
+        // Redirect
+        window.location.href = 'patient-dashboard.html';
+      } else {
+        alert("Invalid Phone or Password!");
+      }
+
+    } catch (e) {
+      console.error("Error logging in: ", e);
+      alert("Login failed. Check console or internet connection.");
+    }
+  }
+</script>
+</body>
+</html>

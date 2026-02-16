@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login • Pathology</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Outfit',sans-serif;
+  background:#0F172A;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
+}
+.container{
+  width:320px;
+  padding:30px;
+  background:rgba(255,255,255,0.05);
+  border-radius:20px;
+}
+h2{margin-bottom:20px;}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:10px;
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#3B82F6;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+a{color:#38BDF8;font-size:12px;text-decoration:none;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Admin Login</h2>
+  <input type="text" id="adminUser" placeholder="Username">
+  <input type="password" id="adminPass" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <br><br>
+  <a href="index.html">← Back to Select Role</a>
+</div>
+
+<script type="module">
+  // 1. Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 2. Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyByOYHIq9KdftTw7-VS4DdHXxbm6bh1Ajg",
+    authDomain: "pathology-f19ed.firebaseapp.com",
+    projectId: "pathology-f19ed",
+    storageBucket: "pathology-f19ed.firebasestorage.app",
+    messagingSenderId: "312449114398",
+    appId: "1:312449114398:web:e52fdc316fdf9c0552690f"
+  };
+
+  // 3. Initialize
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. Login Logic
+  window.login = async function() {
+    const user = document.getElementById('adminUser').value;
+    const pass = document.getElementById('adminPass').value;
+
+    if(!user || !pass) {
+        alert("Please enter Username and Password");
+        return;
+    }
+
+    try {
+        // Query the 'admins' collection
+        const q = query(
+            collection(db, "admins"), 
+            where("username", "==", user), 
+            where("password", "==", pass)
+        );
+        
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            // Success
+            sessionStorage.setItem('adminUser', "true"); // Simple session marker
+            window.location.href = "admin-dashboard.html";
+        } else {
+            alert("Invalid Admin Credentials!");
+        }
+    } catch(e) {
+        console.error("Login Error:", e);
+        alert("Connection Error. Check Console.");
+    }
+  }
+</script>
+
+</body>
+</html>

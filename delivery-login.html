@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Login • Pathology</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Outfit',sans-serif;
+  background:#0F172A;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
+}
+.container{
+  width:320px;
+  padding:30px;
+  background:rgba(255,255,255,0.05);
+  border-radius:20px;
+}
+h2{margin-bottom:20px;}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:10px;
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#11998e,#38ef7d);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+a{color:#38BDF8;font-size:12px;text-decoration:none;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Report Delivery Login</h2>
+  <input type="text" id="dID" placeholder="Delivery ID">
+  <input type="password" id="dPass" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <br><br>
+  <a href="index.html">← Back to Select Role</a>
+</div>
+
+<script type="module">
+  // 1. Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 2. Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyByOYHIq9KdftTw7-VS4DdHXxbm6bh1Ajg",
+    authDomain: "pathology-f19ed.firebaseapp.com",
+    projectId: "pathology-f19ed",
+    storageBucket: "pathology-f19ed.firebasestorage.app",
+    messagingSenderId: "312449114398",
+    appId: "1:312449114398:web:e52fdc316fdf9c0552690f"
+  };
+
+  // 3. Initialize
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. Login Logic
+  window.login = async function() {
+    const id = document.getElementById('dID').value;
+    const pass = document.getElementById('dPass').value;
+
+    if(!id || !pass) {
+        alert("Please enter ID and Password");
+        return;
+    }
+
+    try {
+        // Checking against 'delivery_partners' collection in Firebase
+        const q = query(
+            collection(db, "delivery_partners"), 
+            where("deliveryId", "==", id), 
+            where("password", "==", pass)
+        );
+        
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            // Login Success
+            const partnerData = querySnapshot.docs[0].data();
+            sessionStorage.setItem('deliveryUser', JSON.stringify(partnerData));
+            window.location.href = "delivery-dashboard.html";
+        } else {
+            alert("Invalid ID or Password! (Check if you added user in Firebase)");
+        }
+    } catch(e) {
+        console.error("Login Error:", e);
+        alert("Connection Error. Check Console.");
+    }
+  }
+</script>
+
+</body>
+</html>
